@@ -1,0 +1,21 @@
+
+
+  .bradius{
+    border-radius: 50px;
+  }
+  .separator{
+    border-bottom: 1px solid #d7d7d7
+  }
+
+
+  .icon-cards {
+    font-size: 32px;
+    color: #f18024;
+}
+
+.lead {
+    height: 48px;
+    color: #f18024;
+    margin-bottom: 0;
+    font-size: 1.6rem;
+}

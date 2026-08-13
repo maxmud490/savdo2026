@@ -1,0 +1,354 @@
+
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,200;1,6..12,300;1,6..12,400;1,6..12,500;1,6..12,600;1,6..12,700&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600&display=swap');
+
+
+
+body{
+   background-color: #f8f9fa;
+    font-size: .8rem;
+    font-weight: 400;
+    color: #212121;
+    font-family: 'Nunito', sans-serif;
+font-family: 'Nunito Sans', sans-serif;
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+.table-container .table th,
+.table-container .table td {
+  position: relative;
+}
+
+.table-container .pointer {
+  cursor: pointer;
+}
+
+.table-container .pointer.bg-opacity-5 {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table-container .pointer:hover {
+  background-color: #f8f9fa;
+}
+
+.table-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 0; /* Position the menu below the button */
+  left: 24px;
+  z-index: 1000;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-container ul li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.table-container ul li:hover {
+  background-color: #f8f9fa;
+}
+
+.main-content{
+  width: 100%;
+  margin-left: 40px;
+  margin-top: 140px;
+}
+  .navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 3;
+    height: 90px;
+}
+
+.logo-text{
+  font-size: 25px;
+  color: #212121;
+  cursor: pointer;
+}
+.logo-text:hover{
+  color:#f18024
+}
+
+.balans{
+  color: #8f8f8f;
+  font-size: 20px;
+}
+
+
+.btn-orange {
+  background-color: #f18024!important;
+  border-color: #f18024;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50px;
+
+}
+.text-orange {
+  color: #f18024;
+  font-size: 1rem;
+}
+
+.w-400{
+  width: 400px;
+}
+
+.btn-orange:hover {
+  color: #fff!important;
+  background-color: #de6b0e!important;
+  border-color: #de6b0e!important;
+}
+
+.btn-red {
+  background-color: #e7523e!important;
+  border-color: #e7523e;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50px;
+
+  
+}
+
+.btn-red:hover {
+  color: #fff;
+  background-color: #e0331c;
+  border-color: #e0331c;
+}
+
+.hover{
+  color: #de6b0e;
+  cursor: pointer;
+}
+
+.dashboard-container {
+  background-color: #fff;
+  margin-top: 80px;
+}
+
+.left-sidebar {
+
+  width: 110px;
+  height: 100vh;
+  padding-top: 20px;
+  margin-top: 80px;
+}
+
+.content {
+  padding: 20px;
+}
+
+/* Add your custom styles here if needed */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.bgPrimary{
+  background-color: #f18024;
+}
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Set to 100% of the viewport height */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  color: red;
+  z-index: 1000; /* Adjust as needed to ensure it's above other elements */
+}
+
+.input-container {
+  position: relative;
+}
+
+.message {
+  position: absolute;
+  top: 100%;
+  left: 40px;
+  color: #e0331c; /* Adjust the color as needed */
+  margin-top: 5px; /* Adjust the margin as needed */
+}
+
+.product-count {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: none;
+}
+
+.input-group:focus-within .product-count {
+  display: block;
+}
+
+.return-home-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  margin-top: 20px;
+  text-decoration: none;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.return-home-btn:hover {
+  background-color: #0056b3;
+}
+
+
+/* CSS */
+.button-26 {
+  appearance: button;
+  background-color: #1652F0;
+  border: 1px solid #1652F0;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-family: Graphik,-apple-system,system-ui,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
+  font-size: 14px;
+  line-height: 1.15;
+  overflow: visible;
+  padding: 8px 12px;
+  position: relative;
+  text-align: center;
+  text-transform: none;
+  transition: all 80ms ease-in-out;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: fit-content;
+}
+
+.button-26:disabled {
+  opacity: .5;
+}
+
+.button-26:focus {
+  outline: 0;
+}
+
+.button-26:hover {
+  background-color: #0A46E4;
+  border-color: #0A46E4;
+}
+
+.button-26:active {
+  background-color: #0039D7;
+  border-color: #0039D7;
+}
+.product-input:focus, .product-input:active {
+border: 1px solid#f7b37c;
+
+}
+
+.option:hover, .option:focus {
+  color: #fff;
+  background-color: #f7b37c;
+  outline: 0 none;
+  cursor: pointer;
+}
+.active-product{
+  background-color: #f7b37c;
+  color: #fff;
+}
+.bg-orange{
+  background-color: #f18024;
+  border: none;
+  outline: none;
+}
+.fs-sm{
+  font-size: 12px;
+}
+
+.darkOrange{
+  background-color: #b69329;
+  border-color: #b69329;
+}
+.bg-orange:focus, .darkOrange:focus{
+  border: none;
+  outline: none;
+}
+.bg-orange:hover{
+  background-color: #cf6004;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.darkOrange:hover{
+  background-color: #eec037;
+}
+.bg-f{
+  background-color: #b69329;
+}
+
+@media (max-width: 768px) {
+  .navbar .container-fluid {
+    flex-wrap: wrap;
+  }
+
+  .navbar .d-flex {
+    flex-direction: row; /* Change to row for side-by-side layout */
+    align-items: center;
+    justify-content: end;
+  }
+
+  .navbar .w-400 {
+    width: 100%; /* Make the width full for side-by-side layout */
+   
+  }
+
+  .navbar .w-400 .mt-1 {
+    margin-right: 1rem; /* Adjust the margin between phone number and logout button */
+  }
+  .btnContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+   
+  }
+  .productList{
+    text-align: center;
+  }
+  .productBtn{
+    display: none;
+  }
+  .smallBtn:first-child{
+   margin-bottom: 6px;
+  }
+  .main-content{
+    width: 100%;
+    margin-left: 0;
+    margin-top: 140px;
+  }
+  .logo-text{
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .salesTitle{
+    text-align: center;
+  }
+  .pdfBtn{
+    display: none;
+  }
+  .backBtn{
+    display: block;
+    text-align: end;
+  }
+  .dNone{
+    display: none;
+  }
+ 
+
+}
+
