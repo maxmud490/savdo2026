@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import LoaderButton from "../LoaderButton";
 
-function AddClientModal({setClientsArray}) {
+function AddClientModal({ clientsArray, setClientsArray }) {
   const [formData, setFormData] = useState({
     client: "",
     data: "",
@@ -32,7 +32,17 @@ function AddClientModal({setClientsArray}) {
 
     try {
         setBtnLoading(true)
-      const response = await axios.post("http://localhost:5000/api/addClients", newClient);
+      const token = localStorage.getItem("token");
+
+const response = await axios.post(
+  "http://localhost:5000/api/addClients",
+  newClient,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
       if (response.status === 200 || response.status === 201) {
         console.log("Client data successfully submitted to the server");
       } else {

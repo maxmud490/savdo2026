@@ -8,6 +8,43 @@ const jwt = require('jsonwebtoken');
 const ObjectId = mongoose.Types.ObjectId;
 const addClient = require('../models/addClient');
 
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "Token mavjud emas"
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token noto'g'ri"
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    req.userId = decoded.userId;
+
+    next();
+
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Token yaroqsiz yoki muddati tugagan"
+    });
+  }
+};
+
 // ======================================================
 // 1. MONGODB URI
 // ======================================================
@@ -88,7 +125,10 @@ const productSchema = new mongoose.Schema({
   ulgurjiNarxi: String,
   sotibOlinganNarxi: String,
   id: String,
-
+userId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+},
   creationDateTime: {
     type: Date,
     default: Date.now
@@ -107,24 +147,38 @@ const Product = mongoose.model('Product', productSchema);
 // 6. PRODUCT YARATISH
 // ======================================================
 
-router.post('/products', async (req, res) => {
+// ======================================================
+// PRODUCTS
+// ======================================================
+
+// MAHSULOT QO'SHISH
+router.post('/products', authMiddleware, async (req, res) => {
   try {
     const newProduct = new Product({
       ...req.body,
 
-      // Omborga kelgan jami son — O'ZGARMAYDI
+      // Mahsulot egasi
+      userId: req.userId,
+
+      // Omborga kelgan jami son
       oramlarSoni: Number(req.body.oramlarSoni) || 0,
 
       // Boshlang'ich qoldiq
       qoldiq: Number(req.body.oramlarSoni) || 0,
 
       // 1 o'ramdagi dona soni
-      donaPerOram: Math.max(1, Number(req.body.donaPerOram) || 1),
+      donaPerOram: Math.max(
+        1,
+        Number(req.body.donaPerOram) || 1
+      ),
 
       // Ombordagi jami dona
       qoldiqDona:
         (Number(req.body.oramlarSoni) || 0) *
-        Math.max(1, Number(req.body.donaPerOram) || 1),
+        Math.max(
+          1,
+          Number(req.body.donaPerOram) || 1
+        ),
     });
 
     const savedProduct = await newProduct.save();
@@ -147,108 +201,232 @@ router.post('/products', async (req, res) => {
 
 
 // ======================================================
-// 7. ROUTERNI EXPORT QILISH
+// BARCHA MAHSULOTLARNI OLISH
 // ======================================================
 
-// Route to fetch all products
-router.get('/products', async (req, res) => {
+router.get('/products', authMiddleware, async (req, res) => {
   try {
-    // Fetch all products from the database
-    const allProducts = await Product.find();
+    const allProducts = await Product.find({
+      userId: req.userId
+    });
 
-    // Sending a 200 OK response with the fetched products
-    res.status(200).json({ success: true, products: allProducts });
+    res.status(200).json({
+      success: true,
+      products: allProducts
+    });
+
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
-  }
-});
-router.delete('/products/:id', async (req, res) => {
-  const productId = req.params.id;
+    console.error('❌ Error fetching products:', error);
 
-  try {
-    console.log('Deleting product with ID:', productId);
-    // Find the product by ID and remove it
-    const deletedProduct = await Product.findByIdAndDelete(productId);
-
-    if (!deletedProduct) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
-    }
-
-    res.status(200).json({ success: true, product: deletedProduct });
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
-  }
-});
-
-// Route to update a product
-
-router.put('/products/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const currentProduct = await Product.findOne({ id: productId });
-
-    if (!currentProduct) {
-      return res.status(404).json({ success: false, error: 'Product not found' });
-    }
-
-    const updatedProductData = { ...req.body };
-    const donaPerOram = Math.max(1, Number(
-      updatedProductData.donaPerOram ?? currentProduct.donaPerOram ?? 1
-    ));
-
-    // O'ramlar soni asl kirim sifatida saqlanadi.
-    // Tahrirlashda eski qoldiq tasodifan o'zgarmaydi.
-    delete updatedProductData.qoldiq;
-    delete updatedProductData.qoldiqDona;
-
-    updatedProductData.donaPerOram = donaPerOram;
-
-    // Agar oramlarSoni o'zgartirilmasa, mavjud qoldiq saqlanadi.
-    if (updatedProductData.oramlarSoni !== undefined) {
-      const newOriginal = Number(updatedProductData.oramlarSoni) || 0;
-      const oldOriginal = Number(currentProduct.oramlarSoni) || 0;
-      const oldQoldiqDona =
-        currentProduct.qoldiqDona !== undefined && currentProduct.qoldiqDona !== null
-          ? Number(currentProduct.qoldiqDona)
-          : (Number(currentProduct.qoldiq) || oldOriginal) *
-            Math.max(1, Number(currentProduct.donaPerOram) || 1);
-
-      // Yangi son eski kirimdan katta bo'lsa, farq yangi kirim deb qo'shiladi.
-      const addedOram = Math.max(0, newOriginal - oldOriginal);
-      updatedProductData.qoldiqDona = oldQoldiqDona + addedOram * donaPerOram;
-      updatedProductData.qoldiq = Math.floor(
-        updatedProductData.qoldiqDona / donaPerOram
-      );
-    } else {
-      const currentQoldiqDona =
-        currentProduct.qoldiqDona !== undefined && currentProduct.qoldiqDona !== null
-          ? Number(currentProduct.qoldiqDona)
-          : (Number(currentProduct.qoldiq) || Number(currentProduct.oramlarSoni) || 0) *
-            Math.max(1, Number(currentProduct.donaPerOram) || 1);
-      updatedProductData.qoldiqDona = currentQoldiqDona;
-      updatedProductData.qoldiq = Math.floor(
-        currentQoldiqDona / donaPerOram
-      );
-    }
-
-    const updatedProduct = await Product.findOneAndUpdate(
-      { id: productId },
-      { $set: updatedProductData },
-      { new: true }
-    );
-
-    res.status(200).json({ success: true, product: updatedProduct });
-  } catch (error) {
-    console.error('Error in updating a product:', error);
     res.status(500).json({
       success: false,
-      error: 'Internal Server Error',
-      details: error.message,
+      error: 'Internal Server Error'
     });
   }
 });
+// ======================================================
+// MAHSULOTNI O'CHIRISH
+// ======================================================
+
+router.delete(
+  '/products/:id',
+  authMiddleware,
+  async (req, res) => {
+
+    const productId = req.params.id;
+
+    try {
+
+      console.log(
+        'Deleting product:',
+        productId,
+        'User:',
+        req.userId
+      );
+
+      const deletedProduct =
+        await Product.findOneAndDelete({
+          _id: productId,
+          userId: req.userId
+        });
+
+      if (!deletedProduct) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        product: deletedProduct
+      });
+
+    } catch (error) {
+
+      console.error(
+        '❌ Error deleting product:',
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        error: 'Internal Server Error'
+      });
+    }
+  }
+);
+// Route to update a product
+router.put(
+  '/products/:id',
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const productId = req.params.id;
+
+      // Faqat shu userga tegishli mahsulotni qidiramiz
+      const currentProduct = await Product.findOne({
+        id: productId,
+        userId: req.userId
+      });
+
+      if (!currentProduct) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      const updatedProductData = {
+        ...req.body
+      };
+
+      const donaPerOram = Math.max(
+        1,
+        Number(
+          updatedProductData.donaPerOram ??
+          currentProduct.donaPerOram ??
+          1
+        )
+      );
+
+      // Qoldiqni frontend o'zgartira olmaydi
+      delete updatedProductData.qoldiq;
+      delete updatedProductData.qoldiqDona;
+
+      // userId ham o'zgartirilmasin
+      delete updatedProductData.userId;
+
+      updatedProductData.donaPerOram = donaPerOram;
+
+      // Agar oramlarSoni o'zgartirilsa
+      if (updatedProductData.oramlarSoni !== undefined) {
+
+        const newOriginal =
+          Number(updatedProductData.oramlarSoni) || 0;
+
+        const oldOriginal =
+          Number(currentProduct.oramlarSoni) || 0;
+
+        const oldQoldiqDona =
+          currentProduct.qoldiqDona !== undefined &&
+          currentProduct.qoldiqDona !== null
+            ? Number(currentProduct.qoldiqDona)
+            : (
+                Number(currentProduct.qoldiq) ||
+                oldOriginal
+              ) *
+              Math.max(
+                1,
+                Number(currentProduct.donaPerOram) || 1
+              );
+
+        // Yangi kirim miqdori
+        const addedOram = Math.max(
+          0,
+          newOriginal - oldOriginal
+        );
+
+        updatedProductData.qoldiqDona =
+          oldQoldiqDona +
+          addedOram * donaPerOram;
+
+        updatedProductData.qoldiq =
+          Math.floor(
+            updatedProductData.qoldiqDona /
+            donaPerOram
+          );
+
+      } else {
+
+        // Oramlar soni o'zgarmasa
+        const currentQoldiqDona =
+          currentProduct.qoldiqDona !== undefined &&
+          currentProduct.qoldiqDona !== null
+            ? Number(currentProduct.qoldiqDona)
+            : (
+                Number(currentProduct.qoldiq) ||
+                Number(currentProduct.oramlarSoni) ||
+                0
+              ) *
+              Math.max(
+                1,
+                Number(currentProduct.donaPerOram) || 1
+              );
+
+        updatedProductData.qoldiqDona =
+          currentQoldiqDona;
+
+        updatedProductData.qoldiq =
+          Math.floor(
+            currentQoldiqDona /
+            donaPerOram
+          );
+      }
+
+      // Yana userId bilan tekshiramiz
+      const updatedProduct =
+        await Product.findOneAndUpdate(
+          {
+            id: productId,
+            userId: req.userId
+          },
+          {
+            $set: updatedProductData
+          },
+          {
+            new: true
+          }
+        );
+
+      if (!updatedProduct) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        product: updatedProduct
+      });
+
+    } catch (error) {
+
+      console.error(
+        '❌ Error in updating a product:',
+        error
+      );
+
+      res.status(500).json({
+        success: false,
+        error: 'Internal Server Error',
+        details: error.message
+      });
+    }
+  }
+);
+///////////////////////////
 
 /////////////////////////////////////////////////
 const salesSchema = new mongoose.Schema({
@@ -401,6 +579,67 @@ userSchema.pre('save', async function (next) {
 
 const User = mongoose.model('User', userSchema);
 
+// ======================================================
+// JWT AUTH MIDDLEWARE
+// ======================================================
+
+
+
+User.find().then(users => {
+  console.log("DATABASE USERS:", users);
+});
+
+// ======================================================
+// REGISTER — YANGI USER RO'YXATDAN O'TKAZISH
+// ======================================================
+
+router.post('/register', async (req, res) => {
+  try {
+    const { text, password } = req.body;
+
+    // 1. Ma'lumotlarni tekshirish
+    if (!text || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Login va parolni kiriting",
+      });
+    }
+
+    // 2. User oldin mavjudligini tekshirish
+    const existingUser = await User.findOne({ text });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Bu login allaqachon mavjud",
+      });
+    }
+
+    // 3. Yangi user yaratish
+    const newUser = new User({
+      text,
+      password,
+    });
+
+    // 4. Saqlash
+    await newUser.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Registratsiya muvaffaqiyatli",
+      userId: newUser._id,
+    });
+
+  } catch (error) {
+    console.error("❌ REGISTER XATO:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Registratsiyada xatolik yuz berdi",
+    });
+  }
+});
+
 router.post('/login', async (req, res) => {
   try {
     const { text, password } = req.body;
@@ -490,7 +729,7 @@ router.post('/suppliers', async (req, res) => {
 });
 
 // Route to fetch all suppliers
-router.get('/suppliers', async (req, res) => {
+router.get('/suppliers', authMiddleware, async (req, res) => {
   try {
     // Fetch all suppliers from the database
     const allSuppliers = await Supplier.find();
@@ -548,22 +787,34 @@ router.delete('/suppliers/:id', async (req, res) => {
   }
 });
 
-router.post('/addClients', async (req, res) => {
+router.post('/addClients', authMiddleware, async (req, res) => {
   try {
-    const newClientData = req.body;
+    const newClientData = {
+      ...req.body,
 
-    // Create a new client document
+      // Mijoz egasi
+      userId: req.userId
+    };
+
     const newClient = await addClient.create(newClientData);
 
-    // Sending a 200 OK response with the created client
-    res.status(200).json({ success: true, client: newClient });
+    res.status(200).json({
+      success: true,
+      client: newClient
+    });
+
   } catch (error) {
     console.error('Error in creating a client:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      details: error.message
+    });
   }
 });
 
-router.get('/getClients', async (req, res) => {
+router.get('/getClients', authMiddleware, async (req, res) => {
   try {
     // Fetch all clients from the database
     const allClients = await addClient.find();
@@ -991,7 +1242,7 @@ router.post('/saveList', async (req, res) => {
   }
 });
 
-router.get('/getList', async (req, res) => {
+router.get('/getList', authMiddleware, async (req, res) => {
   try {
     const salesData = await Save.find(); 
 

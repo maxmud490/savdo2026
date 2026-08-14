@@ -8,6 +8,7 @@ import ProductDetail from "./components/product/ProductDetail";
 import SalesList from "./components/sales/SalesList";
 import axios from "axios";
 import Login from "./components/Login";
+import Register from "./components/Register";
 import { ToastContainer, toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import ClientTable from "./components/clients/ClientTable";
@@ -68,28 +69,34 @@ function App() {
 
   const [productArray, setProductArray] = useState([]);
   const [ saveSales, setSaveSales] = useState([])
-  // const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [userInfo, setUserInfo] = useState({
-  //   userId: null,
-  //   token: null,
-  // });
+   const [isLoggedIn, setIsLoggedIn] = useState(
+  !!localStorage.getItem("token")
+);
 
-  // const onLogin = ({ token, userId }) => {
-  //   setIsLoggedIn(true);
-  //   setUserInfo({
-  //     userId: userId,
-  //     token: token,
-  //   });
-  // };
+const [userInfo, setUserInfo] = useState({
+  userId: localStorage.getItem("userId"),
+  token: localStorage.getItem("token"),
+});
 
-  // const handleLogout = () => {
-  //   setIsLoggedIn(false);
-  //   setUserInfo({
-  //     userId: null,
-  //     token: null,
-  //   });
+  const onLogin = ({ token, userId }) => {
+    setIsLoggedIn(true);
+    setUserInfo({
+      userId: userId,
+      token: token,
+    });
+  };
 
-  // };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+
+  setIsLoggedIn(false);
+
+  setUserInfo({
+    userId: null,
+    token: null,
+  });
+};
 
   function getCurrentDate() {
     const today = new Date();
@@ -118,19 +125,40 @@ function App() {
   };
 
   const fetchProductData = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/products");
-      setProductArray(response.data.products);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
-
-  const fetchClients = async () => {
   try {
+    const token = localStorage.getItem("token");
+
     const response = await axios.get(
-      "http://localhost:5000/api/getClients"
+      "http://localhost:5000/api/products",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setProductArray(response.data.products);
+    setLoading(false);
+
+  } catch (error) {
+    console.error(
+      "Error fetching products:",
+      error.response?.data || error.message
+    );
+  }
+};
+
+ const fetchClients = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.get(
+      "http://localhost:5000/api/getClients",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     console.log("CLIENTS:", response.data);
@@ -146,11 +174,12 @@ function App() {
   }
 };
  
+ useEffect(() => {
+  if (!isLoggedIn) return;
 
-  useEffect(() => {
-    fetchProductData();
-    fetchClients();
-  }, []);
+  fetchProductData();
+  fetchClients();
+}, [isLoggedIn]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -604,29 +633,41 @@ const handleSave = async () => {
 
 
   const handleGet = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/getList");
+  try {
+    const token = localStorage.getItem("token");
 
-      const retrievedData = response.data;
+    const response = await axios.get(
+      "http://localhost:5000/api/getList",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      // Log the retrieved data
-      console.log("Data retrieved successfully:", retrievedData);
+    const retrievedData = response.data;
 
-      // Set the retrieved data to the state or perform other actions
-      setSaveSales(
-        Array.isArray(retrievedData.salesArray) ? retrievedData.salesArray : []
-      );
-    } catch (error) {
-      console.error(
-        "Error fetching data:",
-        error.response?.data || error.message
-      );
-    }
-  };
+    console.log("Data retrieved successfully:", retrievedData);
+
+    setSaveSales(
+      Array.isArray(retrievedData.salesArray)
+        ? retrievedData.salesArray
+        : []
+    );
+
+  } catch (error) {
+    console.error(
+      "Error fetching data:",
+      error.response?.data || error.message
+    );
+  }
+};
 
   useEffect(() => {
-    handleGet();
-  }, []);
+  if (!isLoggedIn) return;
+
+  handleGet();
+}, [isLoggedIn]);
 
 
   /////////////////////////////////////
@@ -699,55 +740,94 @@ const handleSave = async () => {
     setShowContent((prev) => !prev);
   };
   ///////////////////
-  const fetchSuppliers = async () => {
-    try {
-      setLoadingSupplier(true);
-      const response = await axios.get("http://localhost:5000/api/suppliers");
-      setSuppliers(response.data.suppliers);
-      setLoadingSupplier(false);
-    } catch (error) {
-      console.error("Error fetching suppliers:", error);
-    }
-  };
+ const fetchSuppliers = async () => {
+  try {
+    setLoadingSupplier(true);
 
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("Token topilmadi!");
+      return;
+    }
+
+    const response = await axios.get(
+      "http://localhost:5000/api/suppliers",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setSuppliers(response.data.suppliers);
+
+  } catch (error) {
+    console.error(
+      "Error fetching suppliers:",
+      error.response?.data || error.message
+    );
+  } finally {
+    setLoadingSupplier(false);
+  }
+};
+ useEffect(() => {
+  if (!isLoggedIn) return;
+
+  fetchSuppliers();
+}, [isLoggedIn]);
 
   const handleSuppliersSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const supplierData = {
-      id: uuidv4(),
-      name: e.target.elements.supplierName.value,
-      debt: e.target.elements.debt.value,
-      information: e.target.elements.information.value,
-      phoneNumber: e.target.elements.phoneNumber.value,
-    };
-
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/suppliers",
-        supplierData
-      );
-
-      setSuppliers([...suppliers, response.data]);
-
-      fetchSuppliers();
-      setShowModalForm(false);
-    } catch (error) {
-      console.error("Error while making POST request:", error);
-    }
+  const supplierData = {
+    id: uuidv4(),
+    name: e.target.elements.supplierName.value,
+    debt: e.target.elements.debt.value,
+    information: e.target.elements.information.value,
+    phoneNumber: e.target.elements.phoneNumber.value,
   };
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await axios.post(
+      "http://localhost:5000/api/suppliers",
+      supplierData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setSuppliers((prev) => [...prev, response.data]);
+
+    await fetchSuppliers();
+
+    setShowModalForm(false);
+
+  } catch (error) {
+    console.error(
+      "Error while making POST request:",
+      error.response?.data || error.message
+    );
+  }
+};
 
   return (
     <BrowserRouter>
     
-        {/* {!isLoggedIn ? (
-          <Login onLogin={onLogin} />
-        ) : ( */}
+         {!isLoggedIn ? (
+    <>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Login onLogin={onLogin} />} />
+      </Routes>
+    </>
+        ) : ( 
           <>
-            <Navbar handlerShowContent={handlerShowContent} />
+            <Navbar handlerShowContent={handlerShowContent}  handleLogout={handleLogout}/>
           <Dashboard showContent={showContent} />
           <Routes>
             <Route
@@ -841,13 +921,14 @@ const handleSave = async () => {
             <Route
               path="products/10"
               element={
-                <ClientList clientsArray={clientsArray} />
+                <ClientList clientsArray={clientsArray}  setClientsArray={setClientsArray} />
               }
             />
             <Route path="*" element={<NotFound />} />
            
-          </Routes>
-          </>
+                   </Routes>
+        </>
+      )}
     </BrowserRouter>
   
   );

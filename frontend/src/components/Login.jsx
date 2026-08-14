@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 import LoaderButton from "./LoaderButton";
 
 function Login({ onLogin }) {
+  const navigate = useNavigate()
   const [form, setForm] = useState({
     text: "",
     password: "",
@@ -27,7 +29,7 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     try {
-      setLoading(true); 
+      setLoading(true);
 
       const response = await axios.post(
         "http://localhost:5000/api/login",
@@ -36,11 +38,15 @@ function Login({ onLogin }) {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
-      if (response.data) {
+      if (response.data.success) {
         const { token, userId } = response.data;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", userId);
+
         login(token, userId);
         onLogin(token, userId);
 
@@ -53,6 +59,7 @@ function Login({ onLogin }) {
           draggable: true,
           progress: undefined,
         });
+        window.location.href = "/";
       }
     } catch (error) {
       console.log(error.message);
@@ -115,7 +122,7 @@ function Login({ onLogin }) {
                 disabled={loading} // Disable the button during loading
               >
                 {loading ? (
-                 <LoaderButton/>
+                  <LoaderButton />
                 ) : (
                   <>
                     <i className="fas fa-sign-in-alt"></i> Tizimga kirish
@@ -135,6 +142,12 @@ function Login({ onLogin }) {
                 </span>
               </button>
             </div>
+            <button
+  type="button"
+  onClick={() => navigate("/register")}
+>
+  Ro'yxatdan o'tish
+</button>
           </form>
         </div>
       </div>

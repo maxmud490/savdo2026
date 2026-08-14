@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import burger from "../assets/burger-menu.svg";
 import { ToastContainer } from "react-toastify";
 
-const Navbar = ({ handlerShowContent }) => {
+const Navbar = ({ handlerShowContent, handleLogout }) => {
   return (
     
     <nav className="navbar navbar-light bg-white shadow fixed-top">
@@ -38,7 +38,7 @@ const Navbar = ({ handlerShowContent }) => {
             <div className="mt-1 mr-4 d-none d-md-block"><strong className="text-info fs-5">+998902990052</strong></div>
               <div>
                 <button 
-              //  onClick={handleLogout}
+                onClick={handleLogout}
               className="btn btn-primary">Chiqish</button></div>
             </div>
           </div>
