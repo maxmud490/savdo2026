@@ -6,7 +6,16 @@ const clientSchema = new mongoose.Schema({
   percentage: String,
   tel: String,
   price: String,
-  // Add any other fields as needed
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+
+  creationDateTime: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 const addClient = mongoose.model('addClient', clientSchema);

@@ -696,6 +696,11 @@ const supplierSchema = new mongoose.Schema({
   debt: String,
   information: String,
   phoneNumber: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   // Add any other fields as needed
 });
 
@@ -703,87 +708,129 @@ const supplierSchema = new mongoose.Schema({
 const Supplier = mongoose.model('Supplier', supplierSchema);
 
 // Route to create a supplier
-router.post('/suppliers', async (req, res) => {
+router.post('/suppliers', authMiddleware, async (req, res) => {
   try {
-    const {id, name, debt, information, phoneNumber } = req.body;
+    const newSupplier = new Supplier({
+      ...req.body,
+      userId: req.userId,
+    });
 
-    // Create a new supplier document
-    const newSupplier = {
-      id,
-      name,
-      debt,
-      information,
-      phoneNumber,
-      // Add any other fields as needed
-    };
+    const savedSupplier = await newSupplier.save();
 
-    // Save the new supplier to the database
-    const savedSupplier = await Supplier.create(newSupplier);
+    res.status(201).json({
+      success: true,
+      supplier: savedSupplier,
+    });
 
-    // Sending a 200 OK response with the created supplier
-    res.status(200).json({ success: true, supplier: savedSupplier });
   } catch (error) {
-    console.error('Error in creating a supplier:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error("❌ Supplier qo'shishda xato:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 });
 
 // Route to fetch all suppliers
 router.get('/suppliers', authMiddleware, async (req, res) => {
   try {
-    // Fetch all suppliers from the database
-    const allSuppliers = await Supplier.find();
+    const suppliers = await Supplier.find({
+      userId: req.userId,
+    });
 
-    // Sending a 200 OK response with the fetched suppliers
-    res.status(200).json({ success: true, suppliers: allSuppliers });
+    res.status(200).json({
+      success: true,
+      suppliers,
+    });
+
   } catch (error) {
-    console.error('Error fetching suppliers:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error("❌ Supplierlarni olishda xato:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 });
 
-router.put('/suppliers/:id', async (req, res) => {
+router.put('/suppliers/:id', authMiddleware, async (req, res) => {
   try {
     const supplierId = req.params.id;
-    const updatedSupplierData = req.body;
 
-    
     const updatedSupplier = await Supplier.findOneAndUpdate(
-      { id: supplierId },
-      { $set: updatedSupplierData },
-      { new: true }
+      {
+        _id: supplierId,
+        userId: req.userId,
+      },
+      {
+        $set: {
+          name: req.body.name,
+          debt: req.body.debt,
+          information: req.body.information,
+          phoneNumber: req.body.phoneNumber,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!updatedSupplier) {
-      // If the supplier is not found, return a 404 Not Found response
-      return res.status(404).json({ success: false, error: 'Supplier not found' });
+      return res.status(404).json({
+        success: false,
+        error: "Supplier topilmadi yoki bu supplier sizga tegishli emas",
+      });
     }
 
-    // Sending a 200 OK response with the updated supplier
-    res.status(200).json({ success: true, supplier: updatedSupplier });
+    res.status(200).json({
+      success: true,
+      supplier: updatedSupplier,
+    });
+
   } catch (error) {
-    console.error('Error in updating a supplier:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error("❌ Supplierni yangilashda xato:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 });
 
-router.delete('/suppliers/:id', async (req, res) => {
+router.delete('/suppliers/:id', authMiddleware, async (req, res) => {
   try {
     const supplierId = req.params.id;
 
-    // Find the supplier by ID and delete
-    const deletedSupplier = await Supplier.findOneAndDelete({ id: supplierId });
+    const deletedSupplier = await Supplier.findOneAndDelete({
+      _id: supplierId,
+      userId: req.userId,
+    });
 
     if (!deletedSupplier) {
-      // If the supplier is not found, return a 404 Not Found response
-      return res.status(404).json({ success: false, error: 'Supplier not found' });
+      return res.status(404).json({
+        success: false,
+        error: "Supplier topilmadi yoki bu supplier sizga tegishli emas",
+      });
     }
 
-    // Return a success response with the deleted supplier
-    res.status(200).json({ success: true, supplier: deletedSupplier });
+    res.status(200).json({
+      success: true,
+      supplier: deletedSupplier,
+    });
+
   } catch (error) {
-    console.error('Error in deleting a supplier:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error("❌ Supplierni o'chirishda xato:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 });
 
@@ -791,8 +838,6 @@ router.post('/addClients', authMiddleware, async (req, res) => {
   try {
     const newClientData = {
       ...req.body,
-
-      // Mijoz egasi
       userId: req.userId
     };
 
@@ -814,18 +859,31 @@ router.post('/addClients', authMiddleware, async (req, res) => {
   }
 });
 
+
+// ======================================================
+// FAQAT KIRGAN USERNING MIJOZLARI
+// ======================================================
+
 router.get('/getClients', authMiddleware, async (req, res) => {
   try {
-    // Fetch all clients from the database
-    const allClients = await addClient.find();
-    // Sending a 200 OK response with the fetched clients
-    res.status(200).json({ success: true, clients: allClients });
+    const allClients = await addClient.find({
+      userId: req.userId
+    });
+
+    res.status(200).json({
+      success: true,
+      clients: allClients
+    });
+
   } catch (error) {
     console.error('Error fetching clients:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
   }
 });
-
 ///////////////////////////////////////////
 
 const saveListSchema = new mongoose.Schema({
@@ -836,7 +894,11 @@ const saveListSchema = new mongoose.Schema({
   },
 
   id: String,
-
+userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
   clientName: String,
 
   dataValue: String,
@@ -890,14 +952,14 @@ const saveListSchema = new mongoose.Schema({
 
 const Save = mongoose.model('Save', saveListSchema);
 
-router.post('/saveList', async (req, res) => {
+router.post('/saveList', authMiddleware, async (req, res) => {
   try {
     let salesData = req.body;
 
     if (Array.isArray(salesData)) {
       salesData = salesData[0];
     }
-
+     salesData.userId = req.userId;
     const saleId = salesData.saleId || salesData.id;
 
     if (!saleId) {
@@ -946,6 +1008,7 @@ router.post('/saveList', async (req, res) => {
       // Mahsulotni topamiz
       const product = await Product.findOne({
         productName,
+        userId: req.userId
       });
 
       if (!product) {
@@ -1177,7 +1240,7 @@ router.post('/saveList', async (req, res) => {
       id:
         salesData.id ||
         saleId,
-
+       userId: req.userId,
       clientName:
         salesData.clientName || "",
 
@@ -1244,12 +1307,22 @@ router.post('/saveList', async (req, res) => {
 
 router.get('/getList', authMiddleware, async (req, res) => {
   try {
-    const salesData = await Save.find(); 
+    const salesData = await Save.find({
+      userId: req.userId
+    });
 
-    res.status(200).json({ success: true, salesArray: salesData });
+    res.status(200).json({
+      success: true,
+      salesArray: salesData
+    });
+
   } catch (error) {
-    console.error('Error fetching sales data:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error('❌ Error fetching sales data:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
   }
 });
 
