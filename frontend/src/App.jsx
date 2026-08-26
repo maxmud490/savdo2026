@@ -234,26 +234,7 @@ const [userInfo, setUserInfo] = useState({
     setAllTotalValue(newTotalValue);
   }, [salesArray]);
 
-  // const handleDecrement = () => {
-  //   const product = productArray.find(
-  //     (product) =>
-  //       product.productName.toLowerCase() ===
-  //       salesData.productNameValue.toLowerCase()
-  //   );
-
-  //   if (product) {
-  //     const updatedProductArray = productArray.map((p) =>
-  //       p.productName.toLowerCase() === salesData.productNameValue.toLowerCase()
-  //         ? {
-  //             ...p,
-  //             oramlarSoni: (p.oramlarSoni || 0) - salesData.productNumber,
-  //           }
-  //         : p
-  //     );
-
-  //     setProductArray(updatedProductArray);
-  //   }
-  // };
+ 
  // =====================================================
 // handleSubmit - MAHSULOT QO'SHISH
 // =====================================================
@@ -899,10 +880,10 @@ const handleSave = async () => {
                 />
               }
             />
-            {/* <Route
+             <Route
               path="products/8"
-              element={<Reports />}
-            /> */}
+              element={<Reports  saveSales={saveSales}/>}
+            /> 
             <Route path="products/13" element={<ClientTable />} />
             <Route
               path="products/9"

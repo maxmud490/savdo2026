@@ -1348,27 +1348,58 @@ router.post('/updateSelectedValue/:id', async (req, res) => {
   const clientId = req.params.id;
 
   try {
-    const { selectedValue } = req.body;
+    const {
+      selectedValue,
+      cashPayment,
+      bankCard,
+      bankTransfer,
+      otherMethods,
+      loyaltyCard,
+      debtValue,
+      isPaid,
+    } = req.body;
 
-    // Assuming you want to update the selected value for a specific client by their ID
     const updatedClient = await Save.findOneAndUpdate(
       { id: clientId },
-      { selectedValue: selectedValue },
-      { new: true } // Return the updated document
+      {
+        $set: {
+          selectedValue: Number(selectedValue) || 0,
+          cashPayment: Number(cashPayment) || 0,
+          bankCard: Number(bankCard) || 0,
+          bankTransfer: Number(bankTransfer) || 0,
+          otherMethods: Number(otherMethods) || 0,
+          loyaltyCard: Number(loyaltyCard) || 0,
+          debtValue: Number(debtValue) || 0,
+          isPaid: Boolean(isPaid),
+          paymentDate: new Date(),
+        },
+      },
+      {
+        new: true,
+      }
     );
 
     if (!updatedClient) {
-      return res.status(404).json({ success: false, error: 'Client not found' });
+      return res.status(404).json({
+        success: false,
+        error: "Client not found",
+      });
     }
 
-    res.status(200).json({ success: true, updatedClient });
+    res.status(200).json({
+      success: true,
+      updatedClient,
+    });
   } catch (error) {
-    console.error('Error updating selected value:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error("Error updating payment:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      message: error.message,
+    });
   }
 });
-
-
 
 
 

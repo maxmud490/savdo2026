@@ -26,6 +26,8 @@ function SalesPaymet({
   const totalPrice = parseFloat(clientById?.totalValue) || 
                      parseFloat(clientById?.productPrice) || 0;
 
+    const previousPayment = parseFloat(clientById?.selectedValue) || 0;                 
+
   // ✅ Barcha to'lov turlari
   const totalPayment = 
     (parseFloat(inputValues.cashPayment) || 0) +
@@ -34,8 +36,16 @@ function SalesPaymet({
     (parseFloat(inputValues.otherMethods) || 0) +
     (parseFloat(inputValues.loyaltyCard) || 0);
 
-  const remainingDebt = totalPrice - totalPayment;
-  const isPaid = remainingDebt <= 0;
+  const newPayment = totalPayment;
+
+const totalPaid =
+  previousPayment + newPayment;
+
+const remainingDebt =
+  Math.max(totalPrice - totalPaid, 0);
+
+const isPaid =
+  remainingDebt <= 0;
 
   // =====================================================
   // INPUT O'ZGARGANDA
@@ -54,17 +64,21 @@ function SalesPaymet({
   // =====================================================
 
   const handleSpanClick = (fieldName) => {
-    const otherPayments = Object.keys(inputValues)
-      .filter((key) => key !== fieldName)
-      .reduce((sum, key) => sum + (parseFloat(inputValues[key]) || 0), 0);
+  const otherPayments = Object.keys(inputValues)
+    .filter((key) => key !== fieldName)
+    .reduce(
+      (sum, key) => sum + (parseFloat(inputValues[key]) || 0),
+      0
+    );
 
-    const remaining = totalPrice - otherPayments;
-    
-    setInputValues((prev) => ({
-      ...prev,
-      [fieldName]: remaining > 0 ? remaining : 0,
-    }));
-  };
+  const remaining =
+    totalPrice - previousPayment - otherPayments;
+
+  setInputValues((prev) => ({
+    ...prev,
+    [fieldName]: remaining > 0 ? remaining : 0,
+  }));
+};
 
   // =====================================================
   // TO'LOVNI TASDIQLASH
@@ -101,7 +115,7 @@ function SalesPaymet({
       const updatedSale = {
         ...clientById,
         // ✅ To'lov ma'lumotlari
-        selectedValue: totalPayment,
+        selectedValue: totalPaid,
         cashPayment: parseFloat(inputValues.cashPayment) || 0,
         bankCard: parseFloat(inputValues.bankCard) || 0,
         bankTransfer: parseFloat(inputValues.bankTransfer) || 0,
@@ -142,7 +156,8 @@ function SalesPaymet({
       await axios.post(
         `http://localhost:5000/api/updateSelectedValue/${clientById.id}`,
         {
-          selectedValue: totalPayment,
+         selectedValue: newTotalPayment,
+
           cashPayment: inputValues.cashPayment,
           bankCard: inputValues.bankCard,
           bankTransfer: inputValues.bankTransfer,

@@ -256,10 +256,17 @@ function SalesFormComponent({
     setIsListVisible(false);
   };
 
-  const buttonDisabled =
-    (value.trim() !== "" && plasticValue.trim() !== "") ||
-    (value.trim() === "" && plasticValue.trim() === "") ||
-    salesArray.length === 0;
+  // const buttonDisabled =
+  //   (value.trim() !== "" && plasticValue.trim() !== "") ||
+  //   (value.trim() === "" && plasticValue.trim() === "") ||
+  //   salesArray.length === 0;
+
+    const isSaleListEmpty = !Array.isArray(salesArray) || salesArray.length === 0;
+
+const buttonDisabled =
+  (value.trim() !== "" && plasticValue.trim() !== "") ||
+  (value.trim() === "" && plasticValue.trim() === "") ||
+  isSaleListEmpty;
 
   useEffect(() => {
     try {
@@ -418,24 +425,35 @@ function SalesFormComponent({
         </div>
         <div className="row">
           <div className="col-6">
-            <button onClick={handleSave} className="btn btn-sm btn-red mr-3 ">
-              <FontAwesomeIcon icon={faFloppyDisk} className="mr-1" />
-              Saqlash
-            </button>
-            <button className="btn btn-sm btn-red">
-              <FontAwesomeIcon icon={faFloppyDisk} className="mr-1" />
-              Saqlash va chekga chiqazish
-            </button>
+           <button
+  type="button"
+  onClick={handleSave}
+  disabled={isSaleListEmpty}
+  className="btn btn-sm btn-red mr-3"
+>
+  <FontAwesomeIcon icon={faFloppyDisk} className="mr-1" />
+  Saqlash
+</button>
+            <button
+  type="button"
+  disabled={isSaleListEmpty}
+  className="btn btn-sm btn-red"
+>
+  <FontAwesomeIcon icon={faFloppyDisk} className="mr-1" />
+  Saqlash va chekga chiqazish
+</button>
           </div>
 
           <div className="col-md-6 col-12 text-right">
-            <button
-              onClick={handleCustomer}
-              className="btn btn-red btn-sm rounded-full"
-            >
-              <FontAwesomeIcon icon={faCreditCard} className="mr-1" />
-              Mijoz to'lovi
-            </button>
+           <button
+  type="button"
+  onClick={handleCustomer}
+  disabled={isSaleListEmpty}
+  className="btn btn-red btn-sm rounded-full"
+>
+  <FontAwesomeIcon icon={faCreditCard} className="mr-1" />
+  Mijoz to'lovi
+</button>
           </div>
         </div>
         <form onSubmit={handleSubmit}>
