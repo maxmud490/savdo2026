@@ -156,7 +156,7 @@ const isPaid =
       await axios.post(
         `https://savdo2026.onrender.com/api/updateSelectedValue/${clientById.id}`,
         {
-         selectedValue: newTotalPayment,
+         selectedValue: totalPaid,
 
           cashPayment: inputValues.cashPayment,
           bankCard: inputValues.bankCard,
