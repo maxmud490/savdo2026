@@ -35,7 +35,7 @@ function AddClientModal({ clientsArray, setClientsArray }) {
       const token = localStorage.getItem("token");
 
 const response = await axios.post(
-  "http://localhost:5000/api/addClients",
+  "http://https://savdo2026.onrender.com/api/addClients",
   newClient,
   {
     headers: {

@@ -19,7 +19,7 @@ function EditModal({handleCloseModal, editProduct, setEditProduct, fetchProductD
 
   const handleUpdateProduct = async (id) => {
     try {
-      const response = await axios.put(`http://localhost:5000/api/products/${id}`, editProduct);
+      const response = await axios.put(`http://https://savdo2026.onrender.com/api/products/${id}`, editProduct);
       if (response.status === 200) {
         handleCloseModal()
         fetchProductData()
