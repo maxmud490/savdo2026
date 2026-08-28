@@ -66,7 +66,7 @@ function ProductDetail({
 
   const deleteItem = async (id) => {
     try {
-      await axios.delete(`http://https://savdo2026.onrender.com/api/products/${id}`);
+      await axios.delete(`https://savdo2026.onrender.com/api/products/${id}`);
 
       const updatedArray = productArray.filter(
         (item) => (item._id || item.id) !== id

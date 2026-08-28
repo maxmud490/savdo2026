@@ -32,7 +32,7 @@ function Login({ onLogin }) {
       setLoading(true);
 
       const response = await axios.post(
-        "http://https://savdo2026.onrender.com/api/login",
+        "https://savdo2026.onrender.com/api/login",
         { ...form },
         {
           headers: {

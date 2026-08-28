@@ -60,7 +60,7 @@ function SuppliersList({suppliers, setSuppliers, handleSuppliersSubmit,loadingSu
 
     try {
       const response = await axios.put(
-        `http://https://savdo2026.onrender.com/api/suppliers/${editingSupplier.id}`,
+        `https://savdo2026.onrender.com/api/suppliers/${editingSupplier.id}`,
         editedSupplierData
       );
 
@@ -85,7 +85,7 @@ function SuppliersList({suppliers, setSuppliers, handleSuppliersSubmit,loadingSu
   const handleDelete = async (id) => {
     closeDeleteConfirmation(); 
     try {
-      const response = await axios.delete(`http://https://savdo2026.onrender.com/api/suppliers/${id}`);
+      const response = await axios.delete(`https://savdo2026.onrender.com/api/suppliers/${id}`);
       
       if (response.data.success) {
         // Filter out the deleted supplier from the local state

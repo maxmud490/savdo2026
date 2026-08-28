@@ -29,7 +29,7 @@ function Register() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://https://savdo2026.onrender.com/api/register",
+        "https://savdo2026.onrender.com/api/register",
         form,
         {
           headers: {

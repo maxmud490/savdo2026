@@ -129,7 +129,7 @@ const [userInfo, setUserInfo] = useState({
     const token = localStorage.getItem("token");
 
     const response = await axios.get(
-      "http://https://savdo2026.onrender.com/api/products",
+      "https://savdo2026.onrender.com/api/products",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -153,7 +153,7 @@ const [userInfo, setUserInfo] = useState({
     const token = localStorage.getItem("token");
 
     const response = await axios.get(
-      "http://https://savdo2026.onrender.com/api/getClients",
+      "https://savdo2026.onrender.com/api/getClients",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -189,7 +189,7 @@ const [userInfo, setUserInfo] = useState({
         id: uuidv4(),
         ...productData,
       };
-      await axios.post("http://https://savdo2026.onrender.com/api/products", newProductData);
+      await axios.post("https://savdo2026.onrender.com/api/products", newProductData);
 
       setProductData({
         productName: "",
@@ -618,7 +618,7 @@ const handleSave = async () => {
     const token = localStorage.getItem("token");
 
     const response = await axios.get(
-      "http://https://savdo2026.onrender.com/api/getList",
+      "https://savdo2026.onrender.com/api/getList",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -667,7 +667,7 @@ const handleSave = async () => {
   const fetchClientData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://https://savdo2026.onrender.com/api/clients");
+      const response = await axios.get("https://savdo2026.onrender.com/api/clients");
       setClientData(response.data.clients);
       setLoading(false);
     } catch (error) {
@@ -684,7 +684,7 @@ const handleSave = async () => {
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(
-        `http://https://savdo2026.onrender.com/api/client/${id}`
+        `https://savdo2026.onrender.com/api/client/${id}`
       );
       console.log('Axios response:', response);
       if (response.data.success) {
@@ -733,7 +733,7 @@ const handleSave = async () => {
     }
 
     const response = await axios.get(
-      "http://https://savdo2026.onrender.com/api/suppliers",
+      "https://savdo2026.onrender.com/api/suppliers",
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -773,7 +773,7 @@ const handleSave = async () => {
     const token = localStorage.getItem("token");
 
     const response = await axios.post(
-      "http://https://savdo2026.onrender.com/api/suppliers",
+      "https://savdo2026.onrender.com/api/suppliers",
       supplierData,
       {
         headers: {

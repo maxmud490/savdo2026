@@ -18,7 +18,7 @@ axios.interceptors.request.use(
 
 export const saveData = async (data) => {
   try {
-    const response = await axios.post('http://https://savdo2026.onrender.com/api/saveList', data);
+    const response = await axios.post('https://savdo2026.onrender.com/api/saveList', data);
 
     // Assuming the server responds with the updated array directly
     return response.data;
