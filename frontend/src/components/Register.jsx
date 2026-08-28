@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 import LoaderButton from "./LoaderButton";
@@ -49,9 +49,7 @@ function Register() {
           password: "",
         });
 
-        setTimeout(() => {
-          navigate("/");
-        }, 1500);
+        navigate("/");
       }
     } catch (error) {
       console.log(error.response?.data || error.message);
@@ -70,7 +68,7 @@ function Register() {
 
   return (
     <>
-      <ToastContainer />
+     
 
       <div className="wrapper pt-5">
         <div id="logreg-forms">
